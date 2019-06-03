@@ -7,8 +7,8 @@ namespace AESv2
     {
         static void Main(string[] args)
         {
-            var simpleTextBytes = File.ReadAllBytes("C:\\www\\FURB\\desenv-sistemas-seguros\\AESv2\\texto.txt");
-            var keyBytes = File.ReadAllBytes("C:\\www\\FURB\\desenv-sistemas-seguros\\AESv2\\chave.txt");
+            var simpleTextBytes = File.ReadAllBytes("./texto.txt");
+            var keyBytes = File.ReadAllBytes("./chave.txt");
 
             var aes = new AES(keyBytes);
             aes.perform(simpleTextBytes);
