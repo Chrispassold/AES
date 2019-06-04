@@ -24,6 +24,33 @@ namespace AESv2
 
         public byte[] perform(byte[] input)
         {
+            byte[] result = new byte[input.Length * 16];
+            for (int c = 0; c < input.Length; c++)
+            {
+                byte[] bytes = new byte[4 * BLOCK_SIZE];
+                for (int i = 0; i < (4 * BLOCK_SIZE); ++i)
+                {
+                    bytes[i] = input[i];
+                }
+                byte[] perform = performBlock(bytes);
+
+                perform.CopyTo(result, 16 * c);
+            }
+
+            int padding = 16 - input.Length % 16;
+            for (int i = 0; i < padding; i++)
+            {
+                result[input.Length + i] = Convert.ToByte(padding);
+            }
+
+            Print("Result");
+            Print(result);
+
+            return result;
+        }
+
+        private byte[] performBlock(byte[] input)
+        {
             state = new byte[4, BLOCK_SIZE];
             for (int i = 0; i < (4 * BLOCK_SIZE); ++i)
             {
@@ -252,7 +279,7 @@ namespace AESv2
 
         public void Print(string message)
         {
-            Console.WriteLine("**************"+message+ " - "+ round + "**************");
+            Console.WriteLine("**************" + message + " - " + round + "**************");
             Console.WriteLine();
         }
         public void PrintState()
@@ -272,6 +299,24 @@ namespace AESv2
                 {
                     Console.Write("0x" + $"{hex} ");
                 }
+            }
+
+            Console.WriteLine();
+        }
+
+        public void Print(byte[] bytes)
+        {
+            if (bytes == null)
+                return;
+
+            for (var i = 0; i < 16; i += 4)
+            {
+                for (var j = 0; j < BLOCK_SIZE; j++)
+                {
+                    var hex = bytes[i + j].ToString("X2");
+                    Console.Write("0x" + $"{hex} ");
+                }
+                Console.WriteLine();
             }
 
             Console.WriteLine();

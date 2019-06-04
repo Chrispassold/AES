@@ -7,15 +7,9 @@ namespace AESv2
     {
         static void Main(string[] args)
         {
-
-            Console.WriteLine("Informe o arquivo que deseja encripitar ou vazio para o default: ");
-            var fileInput = Console.ReadLine();
-
-            if (string.IsNullOrEmpty(fileInput))
-                fileInput = "./texto.txt";
-
+            var fileInput = "./texto.txt";
             var simpleTextBytes = File.ReadAllBytes(fileInput);
-
+            Console.WriteLine("Lendo arquivo: " + fileInput);
 
             Console.WriteLine("Deseja informar os (B) bytes ou um (A) arquivo: ");
             var option = Console.ReadLine();
@@ -31,36 +25,33 @@ namespace AESv2
                 if (splitBytes.Length > 16 || splitBytes.Length < 16)
                     throw new InvalidDataException("Chave deve ter 16 bytes");
 
-                for(int i = 0; i < splitBytes.Length; i++)
+                for (int i = 0; i < splitBytes.Length; i++)
                 {
                     keyBytes[i] = Convert.ToByte(splitBytes[i]);
                 }
 
             }
-            else if(option.ToLower().Equals("a"))
+            else
             {
-                Console.WriteLine("Informe a key para encriptar ou deixe vazio para o default: ");
-                var keyInput = Console.ReadLine();
-
-                if (string.IsNullOrEmpty(keyInput))
-                    keyInput = "./chave.txt";
-
+                var keyInput = "./chave.txt";
                 keyBytes = File.ReadAllBytes(keyInput);
-
+                Console.WriteLine("Arquivo chave: " + keyInput);
                 if (keyBytes.Length > 16 || keyBytes.Length < 16)
                     throw new InvalidDataException("Chave deve ter 16 bytes");
+
             }
 
-            Console.WriteLine("Informe o caminho de destino da cifragem ou vazio para o default: ");
+            Console.WriteLine("Informe o caminho de destino da cifragem: ");
             var distInput = Console.ReadLine();
 
             if (string.IsNullOrEmpty(distInput))
-                throw new InvalidDataException("Caminho de destino inválido");
+                distInput = "C:/www/FURB/desenv-sistemas-seguros/AESv2/cifrado.txt";
 
             var aes = new AES(keyBytes);
             byte[] output = aes.perform(simpleTextBytes);
 
             File.WriteAllBytes(distInput, output);
+            Console.WriteLine("Arquivo cifrado: " + distInput);
 
             Console.WriteLine("END!");
             Console.Read();//*/
