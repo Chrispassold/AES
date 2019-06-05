@@ -12,6 +12,12 @@ namespace AESv2
         private byte[,] keySchedule;
 
         private byte[,] state;
+        private byte[][] matrixMix = new byte[4][] {
+            new byte[] { 2, 3, 1, 1 },
+            new byte[] { 1, 2, 3, 1 },
+            new byte[] { 1, 1, 2, 3 },
+            new byte[] { 3, 1, 1, 2 }
+        };
 
         private int round = 0;
 
@@ -24,24 +30,25 @@ namespace AESv2
 
         public byte[] perform(byte[] input)
         {
-            byte[] result = new byte[input.Length * 16];
-            for (int c = 0; c < input.Length; c++)
-            {
-                byte[] bytes = new byte[4 * BLOCK_SIZE];
-                for (int i = 0; i < (4 * BLOCK_SIZE); ++i)
-                {
-                    bytes[i] = input[i];
-                }
-                byte[] perform = performBlock(bytes);
+            // byte[] result = new byte[input.Length * 16];
+            // for (int c = 0; c < input.Length; c++)
+            // {
+            //     byte[] bytes = new byte[4 * BLOCK_SIZE];
+            //     for (int i = 0; i < (4 * BLOCK_SIZE); ++i)
+            //     {
+            //         bytes[i] = input[i];
+            //     }
+            //     byte[] perform = performBlock(bytes);
 
-                perform.CopyTo(result, 16 * c);
-            }
+            //     perform.CopyTo(result, 16 * c);
+            // }
 
-            int padding = 16 - input.Length % 16;
-            for (int i = 0; i < padding; i++)
-            {
-                result[input.Length + i] = Convert.ToByte(padding);
-            }
+            // int padding = 16 - input.Length % 16;
+            // for (int i = 0; i < padding; i++)
+            // {
+            //     result[input.Length + i] = Convert.ToByte(padding);
+            // }
+            byte[] result = performBlock(input);
 
             Print("Result");
             Print(result);
@@ -187,25 +194,45 @@ namespace AESv2
             {
                 for (int column = 0; column < 4; ++column)
                 {
-                    temp[row, column] = state[row, column];
+                    temp[row, column] = (byte)(
+                        VerifyTableEAndTableL(state[0, column], matrixMix[row][0]) ^
+                        VerifyTableEAndTableL(state[1, column], matrixMix[row][1]) ^
+                        VerifyTableEAndTableL(state[2, column], matrixMix[row][2]) ^
+                        VerifyTableEAndTableL(state[3, column], matrixMix[row][3])
+                    );
                 }
             }
-
-            for (int column = 0; column < 4; ++column)
-            {
-                state[0, column] = (byte)(gfmultby02(temp[0, column]) ^ gfmultby03(temp[1, column]) ^
-                                           gfmultby01(temp[2, column]) ^ gfmultby01(temp[3, column]));
-                state[1, column] = (byte)(gfmultby01(temp[0, column]) ^ gfmultby02(temp[1, column]) ^
-                                           gfmultby03(temp[2, column]) ^ gfmultby01(temp[3, column]));
-                state[2, column] = (byte)(gfmultby01(temp[0, column]) ^ gfmultby01(temp[1, column]) ^
-                                           gfmultby02(temp[2, column]) ^ gfmultby03(temp[3, column]));
-                state[3, column] = (byte)(gfmultby03(temp[0, column]) ^ gfmultby01(temp[1, column]) ^
-                                           gfmultby01(temp[2, column]) ^ gfmultby02(temp[3, column]));
-            }
+            state = temp;
 
             PrintState();
         }
+        private int VerifyTableEAndTableL(byte value_1, byte value_2)
+        {
+            if (value_1.Equals(0) || value_2.Equals(0))
+            {
+                return 0;
+            }
+            if (value_1.Equals(1))
+            {
+                return value_2;
+            }
+            if (value_2.Equals(1))
+            {
+                return value_1;
+            }
+            var tableE = TableE.table;
+            var tableL = TableL.table;
 
+            var l1 = tableL.Get(this.GetLeftTerm(value_1), this.GetRightTerm(value_1));
+            var l2 = tableL.Get(this.GetLeftTerm(value_2), this.GetRightTerm(value_2));
+            var tableLResult = (byte) (ValidateLength(l1 + l2));
+
+            return tableE.Get(this.GetLeftTerm(tableLResult), this.GetRightTerm(tableLResult));
+        }
+        private int ValidateLength(int value)
+        {
+            return value > 255 ? value - 255 : value;
+        }
         private byte[] SubWord(byte[] word)
         {
             byte[] result = new byte[4];
@@ -232,49 +259,6 @@ namespace AESv2
         private byte GetRightTerm(byte b)
         {
             return (byte)(b & 0x0f);
-        }
-        private static byte gfmultby01(byte b)
-        {
-            return b;
-        }
-
-        private static byte gfmultby02(byte b)
-        {
-            if (b < 0x80)
-                return (byte)(b << 1);
-            else
-                return (byte)(b << 1 ^ 0x1b);
-        }
-        private static byte gfmultby03(byte b)
-        {
-            return (byte)(gfmultby02(b) ^ b);
-        }
-
-        private static byte gfmultby09(byte b)
-        {
-            return (byte)(gfmultby02(gfmultby02(gfmultby02(b))) ^
-                           b);
-        }
-
-        private static byte gfmultby0b(byte b)
-        {
-            return (byte)(gfmultby02(gfmultby02(gfmultby02(b))) ^
-                           gfmultby02(b) ^
-                           b);
-        }
-
-        private static byte gfmultby0d(byte b)
-        {
-            return (byte)(gfmultby02(gfmultby02(gfmultby02(b))) ^
-                           gfmultby02(gfmultby02(b)) ^
-                           b);
-        }
-
-        private static byte gfmultby0e(byte b)
-        {
-            return (byte)(gfmultby02(gfmultby02(gfmultby02(b))) ^
-                           gfmultby02(gfmultby02(b)) ^
-                           gfmultby02(b));
         }
 
         public void Print(string message)

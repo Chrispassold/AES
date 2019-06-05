@@ -45,7 +45,7 @@ namespace AESv2
             var distInput = Console.ReadLine();
 
             if (string.IsNullOrEmpty(distInput))
-                distInput = "C:/www/FURB/desenv-sistemas-seguros/AESv2/cifrado.txt";
+                distInput = "./cifrado.txt";
 
             var aes = new AES(keyBytes);
             byte[] output = aes.perform(simpleTextBytes);
