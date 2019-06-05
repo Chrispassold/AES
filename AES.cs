@@ -50,8 +50,8 @@ namespace AESv2
             // }
             byte[] result = performBlock(input);
 
-            Print("Result");
-            Print(result);
+            PrintNoRound("Result");
+            PrintState();
 
             return result;
         }
@@ -261,6 +261,11 @@ namespace AESv2
             return (byte)(b & 0x0f);
         }
 
+        public void PrintNoRound(string message)
+        {
+            Console.WriteLine("**************" + message + "**************");
+            Console.WriteLine();
+        }
         public void Print(string message)
         {
             Console.WriteLine("**************" + message + " - " + round + "**************");
@@ -283,24 +288,6 @@ namespace AESv2
                 {
                     Console.Write("0x" + $"{hex} ");
                 }
-            }
-
-            Console.WriteLine();
-        }
-
-        public void Print(byte[] bytes)
-        {
-            if (bytes == null)
-                return;
-
-            for (var i = 0; i < 16; i += 4)
-            {
-                for (var j = 0; j < BLOCK_SIZE; j++)
-                {
-                    var hex = bytes[i + j].ToString("X2");
-                    Console.Write("0x" + $"{hex} ");
-                }
-                Console.WriteLine();
             }
 
             Console.WriteLine();
