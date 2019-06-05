@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace AESv2
 {
@@ -30,30 +31,26 @@ namespace AESv2
 
         public byte[] perform(byte[] input)
         {
-            // byte[] result = new byte[input.Length * 16];
-            // for (int c = 0; c < input.Length; c++)
-            // {
-            //     byte[] bytes = new byte[4 * BLOCK_SIZE];
-            //     for (int i = 0; i < (4 * BLOCK_SIZE); ++i)
-            //     {
-            //         bytes[i] = input[i];
-            //     }
-            //     byte[] perform = performBlock(bytes);
+            var fill = (byte)(16 - input.Length % 16);
+            var blockCount = (input.Length / 16) + 1;
+            var inputList = new List<byte>();
+            inputList.AddRange(input);
+            for (int i = 0; i < fill; i++)
+            {
+                inputList.Add(fill);
+            }
 
-            //     perform.CopyTo(result, 16 * c);
-            // }
+            List<byte> content = new List<byte>();
+            for (int i = 0; i < blockCount; i++)
+            {
+                var start = i * 16;
+                var block = inputList.GetRange(start, 16);
+                content.AddRange(performBlock(block.ToArray()));
 
-            // int padding = 16 - input.Length % 16;
-            // for (int i = 0; i < padding; i++)
-            // {
-            //     result[input.Length + i] = Convert.ToByte(padding);
-            // }
-            byte[] result = performBlock(input);
-
-            PrintNoRound("Result");
-            PrintState();
-
-            return result;
+                PrintNoRound("Result");
+                PrintState();
+            }
+            return content.ToArray();
         }
 
         private byte[] performBlock(byte[] input)
